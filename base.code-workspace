@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"name": "base",
+			"path": "../robo/base"
+		},
+		{
+			"name": "net",
+			"path": "../net"
+		},
+		{
+			"name": "test",
+			"path": "../test"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.envFile": "${workspaceFolder}/.env",
+		"python.testing.pytestEnabled": true,
+		"python.testing.pytestArgs": [
+			"-vv",
+			"tests"
+		]
+	}
+}
