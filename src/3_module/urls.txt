@@ -1,0 +1,7 @@
+"https://example.com/page1"
+"https://example.com/page2"
+"https://example.com/page3"
+"https://example.com/page4"
+https://jsonplaceholder.typicode.com/todos/1
+https://httpbin.org/json
+ https://api.agify.io/?name=michael
