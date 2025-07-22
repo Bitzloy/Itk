@@ -1,0 +1,5 @@
+Method,Duration (seconds)
+Single-threaded,3.62396240234375e-05
+ThreadPoolExecutor,0.0045545101165771484
+MultiprocessingPool,0.021119356155395508
+CustomProcesses,0.014333724975585938
