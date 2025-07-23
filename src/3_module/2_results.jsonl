@@ -15,3 +15,10 @@
 {"url": "https://jsonplaceholder.typicode.com/todos/1", "content": {"userId": 1, "id": 1, "title": "delectus aut autem", "completed": false}}
 {"url": "https://httpbin.org/json", "content": {"slideshow": {"author": "Yours Truly", "date": "date of publication", "slides": [{"title": "Wake up to WonderWidgets!", "type": "all"}, {"items": ["Why <em>WonderWidgets</em> are great", "Who <em>buys</em> WonderWidgets"], "title": "Overview", "type": "all"}], "title": "Sample Slide Show"}}}
 {"url": "https://api.agify.io/?name=michael", "content": {"count": 298219, "name": "michael", "age": 64}}
+{"url": "\"https://example.com/page1\"", "status_code": -3, "error": "\u041f\u0440\u043e\u0438\u0437\u043e\u0448\u043b\u0430 \u043e\u0448\u0438\u0431\u043a\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430"}
+{"url": "\"https://example.com/page2\"", "status_code": -3, "error": "\u041f\u0440\u043e\u0438\u0437\u043e\u0448\u043b\u0430 \u043e\u0448\u0438\u0431\u043a\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430"}
+{"url": "\"https://example.com/page3\"", "status_code": -3, "error": "\u041f\u0440\u043e\u0438\u0437\u043e\u0448\u043b\u0430 \u043e\u0448\u0438\u0431\u043a\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430"}
+{"url": "\"https://example.com/page4\"", "status_code": -3, "error": "\u041f\u0440\u043e\u0438\u0437\u043e\u0448\u043b\u0430 \u043e\u0448\u0438\u0431\u043a\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430"}
+{"url": "https://jsonplaceholder.typicode.com/todos/1", "content": {"userId": 1, "id": 1, "title": "delectus aut autem", "completed": false}}
+{"url": "https://httpbin.org/json", "content": {"slideshow": {"author": "Yours Truly", "date": "date of publication", "slides": [{"title": "Wake up to WonderWidgets!", "type": "all"}, {"items": ["Why <em>WonderWidgets</em> are great", "Who <em>buys</em> WonderWidgets"], "title": "Overview", "type": "all"}], "title": "Sample Slide Show"}}}
+{"url": "https://api.agify.io/?name=michael", "content": {"count": 298219, "name": "michael", "age": 64}}

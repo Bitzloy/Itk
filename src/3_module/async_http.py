@@ -20,29 +20,34 @@ async def fetch(
                 url, timeout=aiohttp.ClientTimeout(total=10)
             ) as response:
                 return {"url": url, "status_code": response.status}
-        except aiohttp.ClientConnectionError:
-            print("Нет соединения с сервером")
 
-        except aiohttp.ServerTimeoutError:
-            print("Истекло время ожидания ответа")
+        except aiohttp.ClientConnectionError:
+            return {"url": url, "status_code": -1}
+
+        except (aiohttp.ServerTimeoutError, asyncio.TimeoutError):
+            return {"url": url, "status_code": -2}
 
         except aiohttp.ClientResponseError as e:
-            print(f"Ответ с ошибкой: {e.status}")
+            return {"url": url, "status_code": e.status}
 
         except aiohttp.ClientError:
-            print("Произошла ошибка клиента")
+            return {"url": url, "status_code": -3}
+
         except Exception:
             return {"url": url, "status_code": 0}
 
 
 async def fetch_urls(urls: list[str], file_path: str):
     semaphore = asyncio.Semaphore(5)
+    tasks = []
     async with aiohttp.ClientSession() as session:
-        tasks = [fetch(semaphore, url, session) for url in urls]
+        for url in urls:
+            tasks.append(asyncio.create_task(fetch(semaphore, url, session)))
+        # tasks = [fetch(semaphore, url, session) for url in urls]
         results = await asyncio.gather(*tasks)
 
     async with aiofiles.open(file_path, "w") as file:
-        async for result in results:
+        for result in results:
             await file.write(json.dumps(result) + "\n")
 
 

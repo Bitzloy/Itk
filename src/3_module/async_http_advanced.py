@@ -3,12 +3,6 @@ import json
 
 import aiofiles
 import aiohttp
-from aiohttp import (
-    ClientConnectionError,
-    ClientError,
-    ClientResponseError,
-    ServerTimeoutError,
-)
 
 
 async def fetch(
@@ -23,17 +17,17 @@ async def fetch(
                 else:
                     return None
 
-        except ClientConnectionError:
-            print("Нет соединения с сервером")
+        except aiohttp.ClientConnectionError:
+            return {"url": url, "status_code": -1}
 
-        except ServerTimeoutError:
-            print("Истекло время ожидания ответа")
+        except (aiohttp.ServerTimeoutError, asyncio.TimeoutError):
+            return {"url": url, "status_code": -2}
 
-        except ClientResponseError as e:
-            print(f"Ответ с ошибкой: {e.status}")
+        except aiohttp.ClientResponseError as e:
+            return {"url": url, "status_code": e.status}
 
-        except ClientError:
-            print("Произошла ошибка клиента")
+        except aiohttp.ClientError:
+            return {"url": url, "status_code": -3}
 
         except Exception:
             return {"url": url, "json_content": None}
