@@ -1,31 +1,29 @@
 import unittest.mock
-
 from collections import OrderedDict
 
 
 def lru_cache(maxsize=10):
     def decorator(func):
         cache = OrderedDict()
-        
+
         def wrapper(*args, **kwargs):
             key = (args, frozenset(kwargs.items()))
-            
+
             if key in cache:
                 cache.move_to_end(key)
                 return cache[key]
-            
+
             result = func(*args, **kwargs)
             cache[key] = result
-            
+
             if len(cache) > maxsize:
                 cache.popitem(last=False)
-                
-            return result
-        
-        return wrapper
-    
-    return decorator
 
+            return result
+
+        return wrapper
+
+    return decorator
 
 
 @lru_cache()
@@ -43,8 +41,7 @@ def multiply(a: int, b: int) -> int:
     return a * b
 
 
-if __name__ == '__main__':
-    
+if __name__ == "__main__":
     assert sum(1, 2) == 3
     assert sum(3, 4) == 7
 
