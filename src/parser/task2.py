@@ -13,93 +13,95 @@
 #    Код должен работать на Python 3.10+.
 #    Тестируйте на большом файле (кандидат может сгенерировать тестовый лог сам, например, с помощью скрипта).
 
-import asyncio, aiofiles
-import redis.asyncio as redis
-import datetime
-import json
-import psycopg2
+import asyncio
 
-r = redis.Redis(host="localhost", port=6379, db=0) 
+import aiofiles
+import asyncpg
+
 
 async def reader(file: str):
-    try:
-        async with aiofiles.open(file, "r") as in_file:
-            async for line in in_file:
-                yield line
-    except Exception as e:
-        print(e)
-
-            
+    async with aiofiles.open(file, "r") as in_file:
+        async for line in in_file:
+            yield line
 
 
+async def read_file(input_file: str, queue: asyncio.Queue):
+    async for line in reader(input_file):
+        ip_address, status_code, method, path = parse_log_file(line)
 
-async def read_file(input_file: str):
-    try:
-        tasks = []
-        async for line in reader(input_file):
-            ip_address, status_code, method, path = parse_log_file(line)
-            parsed = json.dumps({"ip_address": ip_address, "status_code": status_code, "method": method, "path": path})
-            await r.rpush("log", parsed)
-            tasks.append(asyncio.create_task(worker(r)))
-            if len(tasks) >= 100:
-                await asyncio.gather(*tasks)
-                tasks.clear()
-            await asyncio.gather(*tasks)
-    except Exception as e:
-        print(e)
+        await queue.put(
+            {
+                "ip_address": ip_address,
+                "status_code": status_code,
+                "method": method,
+                "path": path,
+            }
+        )
+
 
 
 def parse_log_file(line: str):
-    ip_address = line.split('--')[1].split()[0]
+    ip_address = line.split("--")[1].split()[0]
     status_code = line.split()[6]
     method = line.split()[3]
     path = line.split()[4]
     return ip_address, status_code, method, path
 
 
-async def worker(r: redis.Redis):
-    try:
-        conn = psycopg2.connect(
-            host="localhost",
-            database="mydatabase",
-            user="myuser",
-            password="mypassword"
+async def worker(
+    conn: asyncpg.Connection = None,
+    queue: asyncio.Queue = None,
+    batch_size: int = 100,
+):
+    batch = []
+    while True:
+        item = await queue.get()
+        if item is None:
+            queue.task_done()
+            break
+        batch.append(
+            (item["ip_address"], item["status_code"], item["method"], item["path"])
         )
-        cur = conn.cursor()
-        while True:
-            items = await r.lrange("log", 0, -1)
-            if not items:
-                break
-            try:
-                cur.execute("BEGIN")
-                for item in items:
-                    data = json.loads(item)
-                    cur.execute("INSERT INTO logs (ip_address, status_code, method, path) VALUES (%s, %s, %s, %s)", (
-                        data["ip_address"],
-                        data["status_code"],
-                        data["method"],
-                        data["path"]
-                    ))
-                cur.execute("COMMIT")
-            except Exception as e:
-                cur.execute("ROLLBACK")
-                print(f"Ошибка записи в базу данных: {e}")
-            finally:
-                await r.ltrim("log", 1, -1)
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print(f"Ошибка записи в базу данных: {e}")
+        queue.task_done()
 
+        if len(batch) >= batch_size:
+            async with conn.transaction():
+                await conn.executemany(
+                    "INSERT INTO logs (ip_address, status_code, method, path) VALUES ($1, $2, $3, $4)",
+                    batch,
+                )
+            batch.clear()
+            
+
+    if batch:
+        async with conn.transaction():
+            await conn.executemany(
+                "INSERT INTO logs (ip_address, status_code, method, path) VALUES ($1, $2, $3, $4)",
+                batch,
+            )
 
 
 async def main(files: list[str]):
+    queue = asyncio.Queue()
     tasks = []
+    conn = await asyncpg.connect(
+        host="localhost", database="mydatabase", user="myuser", password="mypassword"
+    )
     for file in files:
-        tasks.append(asyncio.create_task(read_file(file)))
+        tasks.append(asyncio.create_task(read_file(file, queue=queue)))
+
+    workers = [asyncio.create_task(worker(queue = queue, conn = conn)) for _ in range(2)]
+
     await asyncio.gather(*tasks)
-    await worker(r)
+    await queue.join()
+
+    for _ in workers:
+        await queue.put(None)
+
+    await asyncio.gather(*workers)
+
+    await conn.close()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main(["task2/log.log"]))

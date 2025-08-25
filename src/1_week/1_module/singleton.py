@@ -40,4 +40,3 @@ class SingletonFromImport:
 
 
 singleton_instance = SingletonFromImport()
-

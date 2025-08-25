@@ -1,6 +1,4 @@
-import random
 import time
-import uuid
 
 import redis
 
@@ -26,8 +24,6 @@ class RateLimiter:
         else:
             print("Запрос разрешен")
             return True
-        
-
 
 
 def make_api_request(rate_limiter: RateLimiter):
