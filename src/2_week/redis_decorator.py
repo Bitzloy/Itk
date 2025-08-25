@@ -3,7 +3,6 @@ import functools
 import time
 
 import redis
-from redis import TimeoutError
 
 redis_client = redis.Redis(host="localhost", port=6379, db=0)
 
@@ -31,7 +30,7 @@ def single(max_processing_time: datetime.timedelta):
                     lock.release()
                     print(f"[{func.__name__}] Лок снят.")
 
-                except TimeoutError:
+                except redis.TimeoutError:
                     print(f"[{func.__name__}] Лок уже истёк или снят.")
 
         return wrapper

@@ -16,6 +16,7 @@ def fetch_task():
         task = (
             TaskQueue.objects.select_for_update(skip_locked=True)
             .filter(status="pending")
+            .order_by("created_at")
             .first()
         )
 

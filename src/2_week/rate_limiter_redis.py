@@ -17,16 +17,17 @@ class RateLimiter:
         self.interval = interval
 
     def test(self) -> bool:
-        now = time.time()
-        pipeline = self.redis.pipeline()
+        current_count = self.redis.incr(self.key)
+        if current_count == 1:
+            self.redis.expire(self.key, self.interval)
+        if current_count > self.limit:
+            print("превышено количество запросов")
+            return False
+        else:
+            print("Запрос разрешен")
+            return True
+        
 
-        pipeline.zremrangebyscore(self.key, 0, now - self.interval)
-        pipeline.zadd(self.key, {str(uuid.uuid4()): now})
-        pipeline.zcard(self.key)
-
-        _, _, current_count = pipeline.execute()
-
-        return current_count <= self.limit
 
 
 def make_api_request(rate_limiter: RateLimiter):
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     rate_limiter = RateLimiter()
 
     for _ in range(50):
-        time.sleep(random.randint(1, 2))
+        time.sleep(0.1)
 
         try:
             make_api_request(rate_limiter)
